@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн чат</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+        #chat-container { 
+            width: 500px; 
+            background: white; 
+            padding: 20px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+            border-radius: 10px; 
+            text-align: left; 
+        }
+        h1 { 
+            margin: 0 0 20px 0; 
+            font-size: 24px; 
+            color: #5cb85c;
+            text-align: center;
+        }
+        #messages { 
+            border: 1px solid #ddd; 
+            height: 300px; 
+            overflow-y: scroll; 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            border-radius: 5px; 
+            background: #f9f9f9;
+        }
+        #message-form { 
+            display: flex; 
+        }
+        #message-input { 
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        #send-btn { 
+            padding: 10px 20px; 
+            margin-left: 10px; 
+            border: none; 
+            background: #5cb85c; 
+            color: white; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        #send-btn:hover { 
+            background: #4cae4c; 
+        }
+        #username { 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            width: calc(100% - 22px); 
+            box-sizing: border-box;
+        }
+        .message { 
+            margin-bottom: 10px; 
+        }
+        .username { 
+            font-weight: bold; 
+            color: #5cb85c;
+            margin-right: 5px; 
+        }
+        .text { 
+            display: inline; 
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Онлайн чат</h1>
+        <input id="username" type="text" placeholder="Введите ваше имя..." />
+        <div id="messages">
+            {% for message in messages %}
+                <div class="message"><span class="username">{{ message.username }}:</span> <span class="text">{{ message.text }}</span></div>
+            {% endfor %}
+        </div>
+        <form id="message-form">
+            <input id="message-input" autocomplete="off" placeholder="Введите сообщение..." />
+            <button id="send-btn">Отправить</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const socket = io();
+            const messages = document.getElementById('messages');
+            const form = document.getElementById('message-form');
+            const input = document.getElementById('message-input');
+            const usernameInput = document.getElementById('username');
+            const sendBtn = document.getElementById('send-btn');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = input.value;
+                const username = usernameInput.value || 'Аноним';
+                socket.send({ username: username, msg: message });
+                input.value = '';
+            });
+
+            socket.on('message', (data) => {
+                const item = document.createElement('div');
+                item.classList.add('message');
+                item.innerHTML = `<span class="username">${data.username}:</span> <span class="text">${data.msg}</span>`;
+                messages.appendChild(item);
+                messages.scrollTop = messages.scrollHeight;
+            });
+        });
+    </script>
+</body>
+</html>
